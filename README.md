@@ -15,13 +15,12 @@
   <a href="http://commitizen.github.io/cz-cli/"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt=""></a>
 </p>
 
+* For Darknet implemetation, see [darknet](darknet)
+
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
 - [Background](#background)
-- [Prepare Data](#prepare-data)
-- [Installation](#installation)
-- [Usage](#usage)
 - [Maintainers](#maintainers)
 - [Thanks](#thanks)
 - [Contributing](#contributing)
@@ -31,18 +30,6 @@
 
 This repository implements different ways of generating code for anchor-boxes, including YOLOv2/YOLOv3 anchor-box generation, using PASCAL VOC and COCO datasets
 
-## Prepare Data
-
-...
-
-## Installation
-
-...
-
-## Usage
-
-...
-
 ## Maintainers
 
 * zhujian - *Initial work* - [zjykzj](https://github.com/zjykzj)
@@ -50,6 +37,7 @@ This repository implements different ways of generating code for anchor-boxes, i
 ## Thanks
 
 * [AlexeyAB/darknet](https://github.com/AlexeyAB/darknet/tree/master)
+* [lars76/kmeans-anchor-boxes](https://github.com/lars76/kmeans-anchor-boxes)
 
 ## Contributing
 
