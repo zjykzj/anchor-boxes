@@ -16,6 +16,7 @@
 </p>
 
 * For Darknet implemetation, see [darknet](darknet)
+* For custom YOLOv2 anchor-boxes implementation, see [v2](v2)
 
 ## Table of Contents
 
