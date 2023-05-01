@@ -23,6 +23,8 @@ strides = 32.
 def parse_args():
     parser = argparse.ArgumentParser(description="YOLOv2 Anchor-boxes.")
     parser.add_argument('data', metavar='DIR', help='Path to dataset')
+    parser.add_argument('-t', '--train', metavar='TRAIN', default='voc2yolov5-train', help='Train dataset')
+    parser.add_argument('-v', '--val', metavar='VAL', default='voc2yolov5-val', help='Val dataset')
     parser.add_argument('output', metavar='OUTPUT', help='Path to save files')
     parser.add_argument('-e', '--exp', metavar='EXP', default='voc', help='Sub-folder name')
 
@@ -35,8 +37,8 @@ def parse_args():
     return args
 
 
-def get_yolov5_data(root):
-    label_dir = os.path.join(root, 'labels')
+def get_yolov5_data(root, name):
+    label_dir = os.path.join(root, name, 'labels')
     label_path_list = sorted(glob.glob(os.path.join(label_dir, '*.txt')))
 
     box_list = list()
@@ -117,7 +119,7 @@ def kmeans(box_array, centroids, eps):
     return centroids
 
 
-def write_anchors_to_file(centroids, X, anchor_file):
+def write_anchors_to_file(centroids, train_box_array, test_box_array, anchor_file):
     anchors = centroids.copy()
     scaled_anchors = centroids.copy()
     print(anchors.shape)
@@ -131,8 +133,10 @@ def write_anchors_to_file(centroids, X, anchor_file):
     print('Anchors = ', anchors[sorted_indices])
     print('Scaled Anchors = ', scaled_anchors[sorted_indices])
 
-    avg_iou = avg_IOU(X, centroids)
-    print(f'Avg IOU: {avg_iou}')
+    train_avg_iou = avg_IOU(train_box_array, centroids)
+    test_avg_iou = avg_IOU(test_box_array, centroids)
+    print(f'Train Avg IOU: {train_avg_iou}')
+    print(f'Test Avg IOU: {test_avg_iou}')
 
     print(f"Write to {anchor_file}")
     with open(anchor_file, 'w') as f:
@@ -142,24 +146,26 @@ def write_anchors_to_file(centroids, X, anchor_file):
         f.write(','.join(anchors) + '\n')
         f.write(','.join(scaled_anchors) + '\n')
 
-        f.write('%f\n' % (avg_iou))
+        f.write('%f\n' % (train_avg_iou))
+        f.write('%f\n' % (test_avg_iou))
         print()
 
 
-def process(num_clusters, box_array, anchor_file):
+def process(num_clusters, train_box_array, test_box_array, anchor_file):
     eps = 0.005
 
-    indices = [random.randrange(box_array.shape[0]) for _ in range(num_clusters)]
-    centroids = box_array[indices]
+    indices = [random.randrange(train_box_array.shape[0]) for _ in range(num_clusters)]
+    centroids = train_box_array[indices]
 
-    centroids = kmeans(box_array, centroids, eps)
-    write_anchors_to_file(centroids, box_array, anchor_file)
+    centroids = kmeans(train_box_array, centroids, eps)
+    write_anchors_to_file(centroids, train_box_array, test_box_array, anchor_file)
 
 
 def main():
     args = parse_args()
 
-    box_array = get_yolov5_data(args.data)
+    train_box_array = get_yolov5_data(args.data, args.train)
+    test_box_array = get_yolov5_data(args.data, args.val)
 
     output_dir = os.path.join(args.output, args.exp)
     if not os.path.isdir(output_dir):
@@ -169,11 +175,11 @@ def main():
         for ni in range(1, 11):
             num_clusters = ni
             anchor_file = os.path.join(output_dir, f'anchors{num_clusters}.txt')
-            process(num_clusters, box_array, anchor_file)
+            process(num_clusters, train_box_array, test_box_array, anchor_file)
     else:
         num_clusters = int(args.num_clusters)
         anchor_file = os.path.join(output_dir, f'anchors{num_clusters}.txt')
-        process(num_clusters, box_array, anchor_file)
+        process(num_clusters, train_box_array, test_box_array, anchor_file)
 
 
 if __name__ == '__main__':
