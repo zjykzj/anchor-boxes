@@ -11,7 +11,7 @@ anchor-boxes.
 **Notes:**
 
 1. From the implementation, it can be observed that the training set includes voc2007-trainval + voc2012-trainval
-2. There are always slight differences in the calculation results of each anchor-box
+2. There will be some differences in each calculation result
 3. Darknet also provides YOLOv2 training recipes, but there will be significant differences with mine simulation
    anchor-boxes. Didn't find a specific reason?
 
