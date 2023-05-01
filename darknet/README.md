@@ -42,3 +42,7 @@ For example, you can see anchors in
   ```
 
 Mine simulation results in [generated_anchors/anchors](generated_anchors/anchors)
+
+```text
+1.19,1.99, 2.79,4.60, 4.53,8.92, 8.06,5.29, 10.32,10.66
+```
