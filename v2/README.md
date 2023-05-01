@@ -5,22 +5,36 @@
 
 ### Prepare data
 
-See [voc2yolov5.py](https://github.com/zjykzj/vocdev/blob/master/py/voc2yolov5.py) to get the train dataset
+See [voc2yolov5.py](https://github.com/zjykzj/vocdev/blob/master/py/voc2yolov5.py) to get the train/test dataset
 
 ```shell
 python voc2yolov5.py -s /home/zj/data/voc -d /home/zj/data/voc/voc2yolov5-train -l trainval-2007 trainval-2012
+python voc2yolov5.py -s /home/zj/data/voc -d /home/zj/data/voc/voc2yolov5-val -l test-2007
 ```
 
 ### Generate anchor-boxes
 
-Generate a specified number of anchor box lists
+Generate a specified number of anchor-boxes lists
 
 ```
-python gen_anchors.py -n 5 -e voc /home/zj/data/voc/voc2yolov5-train/ ./generated_anchors
+python gen_anchors.py -t voc2yolov5-train -v voc2yolov5-val -n 5 -e voc /home/zj/data/voc ./generated_anchors
 ```
 
-Or traverse anchor boxes with different numbers [1, 10]. See [generated_anchors/voc](generated_anchors/voc)
+Or traverse anchor-boxes with different numbers [1, 10]. See [generated_anchors/voc](generated_anchors/voc)
 
 ```
-python gen_anchors.py -e voc /home/zj/data/voc/voc2yolov5-train/ ./generated_anchors
+python gen_anchors.py -t voc2yolov5-train -v voc2yolov5-val -e voc /home/zj/data/voc ./generated_anchors
+```
+
+The content of `anchors5.txt` is as follows:
+
+```text
+# Anchors
+0.09,0.15,0.21,0.35,0.35,0.69,0.62,0.41,0.79,0.82
+# Scaled Anchors (Anchors * 13.)
+1.19,1.99,2.79,4.60,4.53,8.92,8.06,5.29,10.32,10.65
+# Train Avg IOU
+0.615898
+# Test Avg IOU
+0.622052
 ```
