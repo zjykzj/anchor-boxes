@@ -14,6 +14,10 @@ import argparse
 
 import numpy as np
 
+import warnings
+
+warnings.filterwarnings('ignore')
+
 width_in_cfg_file = 416.
 height_in_cfg_file = 416.
 
@@ -46,6 +50,8 @@ def get_yolov5_data(root, name):
         # [[box_w, box_h], ]
         # The coordinate size is relative to the width and height of the image
         boxes = np.loadtxt(label_path, delimiter=' ', dtype=float)
+        if len(boxes) == 0:
+            continue
         if len(boxes.shape) == 1:
             boxes = [boxes]
         for label, xc, yc, box_w, box_h in boxes:
