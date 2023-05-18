@@ -58,7 +58,7 @@ Generate a specified number of anchor-boxes lists
 python gen_anchors.py -t coco2yolov5-train -v coco2yolov5-val -n 5 -e coco /home/zj/data/coco ./generated_anchors
 ```
 
-Or traverse anchor-boxes with different numbers [1, 10].
+Or traverse anchor-boxes with different numbers [1, 10]. See [generated_anchors/coco](generated_anchors/coco)
 
 ```
 python gen_anchors.py -t coco2yolov5-train -v coco2yolov5-val -e coco /home/zj/data/coco ./generated_anchors
