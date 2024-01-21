@@ -25,7 +25,7 @@
   ![](./assets/canva_v3.jpg)
 
 * ***Blank boxes represent anchors based on VOC***
-* ***Grayscale boxes represent anchors based on COCO***
+* ***Gray boxes represent anchors based on COCO***
 
 ## Table of Contents
 
