@@ -24,6 +24,9 @@
 * For custom YOLOv3 anchor-boxes implementation, see [v3](v3)
   ![](./assets/canva_v3.jpg)
 
+* ***Blank boxes represent anchors based on VOC***
+* ***Grayscale boxes represent anchors based on COCO***
+
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
@@ -35,8 +38,7 @@
 
 ## Background
 
-This repository implements different ways of generating code for anchor-boxes, including YOLOv2/YOLOv3 anchor-box
-generation, using PASCAL VOC and COCO datasets
+This repository implements different ways of generating code for anchor-boxes, including YOLOv2/YOLOv3 anchor-box generation, using PASCAL VOC and COCO datasets
 
 ## Maintainers
 
