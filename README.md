@@ -16,8 +16,13 @@
 </p>
 
 * For Darknet implemetation, see [darknet](darknet)
+  ![](./assets/canva_darknet.jpg)
+
 * For custom YOLOv2 anchor-boxes implementation, see [v2](v2)
+  ![](./assets/canva_v2.jpg)
+
 * For custom YOLOv3 anchor-boxes implementation, see [v3](v3)
+  ![](./assets/canva_v3.jpg)
 
 ## Table of Contents
 
@@ -30,7 +35,8 @@
 
 ## Background
 
-This repository implements different ways of generating code for anchor-boxes, including YOLOv2/YOLOv3 anchor-box generation, using PASCAL VOC and COCO datasets
+This repository implements different ways of generating code for anchor-boxes, including YOLOv2/YOLOv3 anchor-box
+generation, using PASCAL VOC and COCO datasets
 
 ## Maintainers
 
