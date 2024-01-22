@@ -22,8 +22,11 @@ def load_anchors(txt_path, size=1, stride=32):
         anchors = np.array(anchors, dtype=float).reshape(-1, 2) * size * stride
     # print(anchors)
 
-    indices = np.argsort(anchors[:, 0] * anchors[:, 1])
-    anchors = anchors[indices]
+    # indices = np.argsort(anchors[:, 0] * anchors[:, 1])
+    # indices = np.argsort(anchors.prod(-1))
+    # indices = anchors.prod(-1).argsort()
+    # anchors = anchors[indices]
+    anchors = anchors[anchors.prod(-1   ).argsort()]
 
     return anchors
 
