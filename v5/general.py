@@ -11,6 +11,7 @@ import os
 import logging
 import logging.config
 import platform
+import contextlib
 
 LOGGING_NAME = "yolov5"
 TQDM_BAR_FORMAT = '{l_bar}{bar:10}| {n_fmt}/{total_fmt} {elapsed}'  # tqdm bar format
