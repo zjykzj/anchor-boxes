@@ -26,10 +26,13 @@ def check_anchor_order(m):
 
 
 @TryExcept(f'{PREFIX}ERROR')
-def check_anchors(dataset, model, thr=4.0, imgsz=640):
+# def check_anchors(dataset, model, thr=4.0, imgsz=640):
+def check_anchors(dataset, m, thr=4.0, imgsz=640):
     # Check anchor fit to data, recompute if necessary
-    m = model.module.model[-1] if hasattr(model, 'module') else model.model[-1]  # Detect()
+    # m = model.module.model[-1] if hasattr(model, 'module') else model.model[-1]  # Detect()
+    # 基于原始图像最大边等比例缩放
     shapes = imgsz * dataset.shapes / dataset.shapes.max(1, keepdims=True)
+    # 在真值边界框原始宽高的基础上进行随机尺度增强
     scale = np.random.uniform(0.9, 1.1, size=(shapes.shape[0], 1))  # augment scale
     wh = torch.tensor(np.concatenate([l[:, 3:5] * s for s, l in zip(shapes * scale, dataset.labels)])).float()  # wh
 
@@ -51,6 +54,8 @@ def check_anchors(dataset, model, thr=4.0, imgsz=640):
         LOGGER.info(f'{s}Anchors are a poor fit to dataset ⚠️, attempting to improve...')
         na = m.anchors.numel() // 2  # number of anchors
         anchors = kmean_anchors(dataset, n=na, img_size=imgsz, thr=thr, gen=1000, verbose=False)
+        # LOGGER.info(f"anchors shape: {anchors.shape}")
+        # LOGGER.info(f"m.anchors shape: {m.anchors.shape}")
         new_bpr = metric(anchors)[0]
         if new_bpr > bpr:  # replace anchors
             anchors = torch.tensor(anchors, device=m.anchors.device).type_as(m.anchors)
@@ -108,11 +113,11 @@ def kmean_anchors(dataset='./data/coco128.yaml', n=9, img_size=640, thr=4.0, gen
             LOGGER.info(s[:-2])
         return k
 
-    if isinstance(dataset, str):  # *.yaml file
-        with open(dataset, errors='ignore') as f:
-            data_dict = yaml.safe_load(f)  # model dict
-        from utils.dataloaders import LoadImagesAndLabels
-        dataset = LoadImagesAndLabels(data_dict['train'], augment=True, rect=True)
+    # if isinstance(dataset, str):  # *.yaml file
+    #     with open(dataset, errors='ignore') as f:
+    #         data_dict = yaml.safe_load(f)  # model dict
+    #     from utils.dataloaders import LoadImagesAndLabels
+    #     dataset = LoadImagesAndLabels(data_dict['train'], augment=True, rect=True)
 
     # Get label wh
     shapes = img_size * dataset.shapes / dataset.shapes.max(1, keepdims=True)
