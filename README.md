@@ -24,6 +24,9 @@
 * For custom YOLOv3 anchor-boxes implementation, see [v3](v3)
   ![](./assets/canva_v3.jpg)
 
+* For custom YOLOv5 anchor-boxes implementation, see [v5](v5)
+  ![](./assets/canva_v5.jpg)
+
 * ***Blank boxes represent anchors based on VOC***
 * ***Gray boxes represent anchors based on COCO***
 

@@ -26,7 +26,7 @@ def load_anchors(txt_path, size=1, stride=32):
     # indices = np.argsort(anchors.prod(-1))
     # indices = anchors.prod(-1).argsort()
     # anchors = anchors[indices]
-    anchors = anchors[anchors.prod(-1   ).argsort()]
+    anchors = anchors[anchors.prod(-1).argsort()]
 
     return anchors
 
@@ -54,9 +54,9 @@ def draw_darknet():
     return canva
 
 
-def draw_anchors(voc_path, coco_path, canva_name="voc_coco"):
-    anchors_voc = load_anchors(voc_path, stride=STRIDE, size=13)
-    anchors_coco = load_anchors(coco_path, stride=STRIDE, size=13)
+def draw_anchors(voc_path, coco_path, canva_name="voc_coco", stride=STRIDE, size=13):
+    anchors_voc = load_anchors(voc_path, stride=stride, size=size)
+    anchors_coco = load_anchors(coco_path, stride=stride, size=size)
 
     final_canva_w = 0
     final_canvs_h = 0
@@ -114,10 +114,15 @@ if __name__ == '__main__':
 
     voc_path = "v2/generated_anchors/voc/anchors5.txt"
     coco_path = "v2/generated_anchors/coco/anchors5.txt"
-    canva_v2 = draw_anchors(voc_path, coco_path, canva_name="v2")
+    canva_v2 = draw_anchors(voc_path, coco_path, canva_name="v2", stride=STRIDE, size=13)
     cv2.imwrite("assets/canva_v2.jpg", canva_v2)
 
     voc_path = "v3/generated_anchors/voc/anchors5.txt"
     coco_path = "v3/generated_anchors/coco/anchors5.txt"
-    canva_v3 = draw_anchors(voc_path, coco_path, canva_name="v3")
+    canva_v3 = draw_anchors(voc_path, coco_path, canva_name="v3", stride=STRIDE, size=13)
     cv2.imwrite("assets/canva_v3.jpg", canva_v3)
+
+    voc_path = "v5/generated_anchors/voc/anchors5.txt"
+    coco_path = "v5/generated_anchors/coco/anchors5.txt"
+    canva_v5 = draw_anchors(voc_path, coco_path, canva_name="v5", stride=1, size=1)
+    cv2.imwrite("assets/canva_v5.jpg", canva_v5)
