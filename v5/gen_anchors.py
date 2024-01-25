@@ -4,18 +4,46 @@
 @Time    : 2024/1/23 20:01
 @File    : gen_anchors.py
 @Author  : zj
-@Description: 
+@Description:
+
+Usage - Generate anchors for VOC:
+    $ python3 v5/gen_anchors.py ../datasets/ ./output/
+    $ python3 v5/gen_anchors.py ../datasets/ ./output/ -n 5
+
+Usage - Generate anchors for COCO:
+    $ python3 v5/gen_anchors.py ../datasets/coco/ -t train2017 -v val2017 ./output/ -e coco
+    $ python3 v5/gen_anchors.py ../datasets/coco/ -t train2017 -v val2017 ./output/ -e coco -n 5
+
 """
 
 import os
 import cv2
 import glob
 import torch
+import argparse
 
-from tqdm import tqdm
 import numpy as np
+from numpy import ndarray
+from tqdm import tqdm
 
-from autoanchor import check_anchor_order, check_anchors, kmean_anchors
+from autoanchor import kmean_anchors
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="YOLOv5 Anchor-boxes.")
+    parser.add_argument('data', metavar='DIR', help='Path to dataset')
+    parser.add_argument('-t', '--train', metavar='TRAIN', default='voc2yolov5-train', help='Train dataset')
+    parser.add_argument('-v', '--val', metavar='VAL', default='voc2yolov5-val', help='Val dataset')
+    parser.add_argument('output', metavar='OUTPUT', help='Path to save files')
+    parser.add_argument('-e', '--exp', metavar='EXP', default='voc', help='Sub-folder name')
+
+    parser.add_argument('-n', '--num-clusters', metavar='NUM', default=None,
+                        help='Number of cluster centroids')
+
+    args = parser.parse_args()
+    print("args:", args)
+
+    return args
 
 
 class Model:
@@ -41,22 +69,6 @@ class Dataset:
         self.shapes = shapes
         self.labels = labels
         assert len(self.shapes) == len(self.labels)
-
-
-def test_model():
-    anchors = np.array([
-        [10, 13, 16, 30, 33, 23],
-        [30, 61, 62, 45, 59, 119],
-        [116, 90, 156, 198, 373, 326]
-    ])
-    stride = [8, 16, 32]
-    m = Model(anchors=anchors, stride=stride)
-
-    print("anchors:", m.anchors)
-    print("stride:", m.stride)
-    check_anchor_order(m)
-    print("anchors:", m.anchors)
-    print("stride:", m.stride)
 
 
 def get_yolov5_data(root, name):
@@ -91,22 +103,84 @@ def get_yolov5_data(root, name):
     return np.array(shapes), labels
 
 
-def test_dataset():
-    shapes, labels = get_yolov5_data("../../datasets/", "voc2yolov5-train")
-    dataset = Dataset(shapes, labels)
+def IOU(x, centroids):
+    similarities = []
+    k = len(centroids)
+    for centroid in centroids:
+        c_w, c_h = centroid
+        w, h = x
+        if c_w >= w and c_h >= h:
+            similarity = w * h / (c_w * c_h)
+        elif c_w >= w and c_h <= h:
+            similarity = w * c_h / (w * h + (c_w - w) * c_h)
+        elif c_w <= w and c_h >= h:
+            similarity = c_w * h / (w * h + c_w * (c_h - h))
+        else:  # means both w,h are bigger than c_w and c_h respectively
+            similarity = (c_w * c_h) / (w * h)
+        similarities.append(similarity)  # will become (k,) shape
+    return np.array(similarities)
 
-    anchors = np.array([
-        [10, 13, 16, 30, 33, 23],
-        [30, 61, 62, 45, 59, 119],
-        [116, 90, 156, 198, 373, 326]
-    ])
-    stride = [8, 16, 32]
-    m = Model(anchors=anchors, stride=stride)
 
-    check_anchors(dataset, m)
-    print('anchors:', m.anchors)
+def avg_IOU(X, centroids):
+    n, d = X.shape
+    sum = 0.
+    for i in range(X.shape[0]):
+        # note IOU() will return array which contains IoU for each centroid and X[i] // slightly ineffective, but I am too lazy
+        sum += max(IOU(X[i], centroids))
+    return sum / n
+
+
+def write_anchors_to_file(centroids: ndarray, train_dataset: Dataset, val_dataset: Dataset, anchor_file: str,
+                          img_size: int = 640):
+    # Get label wh
+    train_shapes = img_size * train_dataset.shapes / train_dataset.shapes.max(1, keepdims=True)
+    train_wh0 = np.concatenate([l[:, 3:5] * s for s, l in zip(train_shapes, train_dataset.labels)])  # wh
+    train_avg_iou = avg_IOU(train_wh0, centroids)
+
+    val_shapes = img_size * val_dataset.shapes / val_dataset.shapes.max(1, keepdims=True)
+    val_wh0 = np.concatenate([l[:, 3:5] * s for s, l in zip(val_shapes, val_dataset.labels)])  # wh
+    test_avg_iou = avg_IOU(val_wh0, centroids)
+
+    print(f'Train Avg IOU: {train_avg_iou}')
+    print(f'Test Avg IOU: {test_avg_iou}')
+
+    print(f"Write to {anchor_file}")
+    with open(anchor_file, 'w') as f:
+        anchors = [str('%.2f' % x) for x in centroids.reshape(-1)]
+        scaled_anchors = [str('%.2f' % (x / img_size)) for x in centroids.reshape(-1)]
+
+        f.write(','.join(anchors) + '\n')
+        f.write(','.join(scaled_anchors) + '\n')
+
+        f.write('%f\n' % (train_avg_iou))
+        f.write('%f\n' % (test_avg_iou))
+        print()
+
+
+def main():
+    args = parse_args()
+
+    train_shapes, train_labels = get_yolov5_data(args.data, args.train)
+    train_dataset = Dataset(train_shapes, train_labels)
+    val_shapes, val_labels = get_yolov5_data(args.data, args.val)
+    val_dataset = Dataset(val_shapes, val_labels)
+
+    output_dir = os.path.join(args.output, args.exp)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+
+    if args.num_clusters is None:
+        for ni in range(1, 11):
+            num_clusters = ni
+            anchors = kmean_anchors(train_dataset, n=num_clusters, img_size=640, thr=4.0, gen=1000, verbose=False)
+            write_anchors_to_file(anchors, train_dataset, val_dataset,
+                                  os.path.join(output_dir, f'anchors{num_clusters}.txt'))
+    else:
+        num_clusters = int(args.num_clusters)
+        anchors = kmean_anchors(train_dataset, n=num_clusters, img_size=640, thr=4.0, gen=1000, verbose=False)
+        write_anchors_to_file(anchors, train_dataset, val_dataset,
+                              os.path.join(output_dir, f'anchors{num_clusters}.txt'))
 
 
 if __name__ == '__main__':
-    test_dataset()
-    # test_model()
+    main()
